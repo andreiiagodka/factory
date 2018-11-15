@@ -68,6 +68,14 @@ class Factory
         instance_variables.count
       end
 
+      define_method :members do
+        to_h.keys
+      end
+
+      define_method :select do |&action|
+        to_a.select(&action)
+      end
+
       define_method :values do
         instance_variables.map { |inst_var| instance_variable_get(inst_var) }
       end
