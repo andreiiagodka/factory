@@ -36,6 +36,22 @@ class Factory
         self.class == instance.class && self.values == instance.values
       end
 
+      define_method :[] do |parameter|
+        if (parameter.is_a? String) || (parameter.is_a? Symbol)
+          instance_variable_get("@#{parameter}")
+        elsif parameter.is_a? Integer
+          instance_variable_get(instance_variables[parameter])
+        end
+      end
+
+      define_method :[]= do |parameter, value|
+        if (parameter.is_a? String) || (parameter.is_a? Symbol)
+          instance_variable_set("@#{parameter}", value)
+        elsif parameter.is_a? Integer
+          instance_variable_set(instance_variables[parameter], value)
+        end
+      end
+
       define_method :values do
         instance_variables.map { |inst_var| instance_variable_get(inst_var) }
       end
@@ -45,4 +61,5 @@ end
 
 Customer = Factory.new(:name, :age, :gender)
 customer = Customer.new('andrei', 18, 'male')
-puts customer.values
+customer[0] = 'vova'
+puts customer.name
