@@ -31,11 +31,18 @@ class Factory
 
         arguments.zip(parameters).each { |inst_var, value| instance_variable_set("@#{inst_var}", value) }
       end
-    end
 
+      define_method :== do |instance|
+        self.class == instance.class && self.values == instance.values
+      end
+
+      define_method :values do
+        instance_variables.map { |inst_var| instance_variable_get(inst_var) }
+      end
+    end
   end
 end
 
-# Customer = Factory.new(:name)
-# a = Customer.new('andrei')
-# puts a.name
+Customer = Factory.new(:name, :age, :gender)
+customer = Customer.new('andrei', 18, 'male')
+puts customer.values
