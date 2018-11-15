@@ -56,6 +56,18 @@ class Factory
         to_h.dig(*parameters)
       end
 
+      define_method :each do |&action|
+        to_a.each(&action)
+      end
+
+      define_method :each_pair do |&action|
+        to_h.each_pair(&action)
+      end
+
+      define_method :length do
+        instance_variables.count
+      end
+
       define_method :values do
         instance_variables.map { |inst_var| instance_variable_get(inst_var) }
       end
@@ -69,10 +81,19 @@ class Factory
           end
         ]
       end
+
+      define_method :to_a do
+        to_h.values
+      end
+
+      alias_method :size, :length
     end
   end
 end
 
-Customer = Factory.new(:name)
-customer = Customer.new(Customer.new({andrei: [18, 'male']}))
-puts customer.dig(:name, :name, :andrei, 0)
+Customer = Factory.new(:name, :age, :gender)
+customer = Customer.new('andrei', 18, 'male')
+puts customer.length
+# customer.each_pair { |key, value| puts "#{key}->#{value}" }
+# customer = Customer.new(Customer.new({andrei: [18, 'male']}))
+# puts customer.dig(:name, :name, :andrei, 0)
