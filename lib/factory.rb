@@ -52,14 +52,27 @@ class Factory
         end
       end
 
+      define_method :dig do |*parameters|
+        to_h.dig(*parameters)
+      end
+
       define_method :values do
         instance_variables.map { |inst_var| instance_variable_get(inst_var) }
+      end
+
+      define_method :to_h do
+        Hash[
+          instance_variables.map do |inst_var|
+            key = inst_var.to_s.delete('@').to_sym
+            value = instance_variable_get(inst_var)
+            [key, value]
+          end
+        ]
       end
     end
   end
 end
 
-Customer = Factory.new(:name, :age, :gender)
-customer = Customer.new('andrei', 18, 'male')
-customer[0] = 'vova'
-puts customer.name
+Customer = Factory.new(:name)
+customer = Customer.new(Customer.new({andrei: [18, 'male']}))
+puts customer.dig(:name, :name, :andrei, 0)
