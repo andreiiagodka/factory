@@ -14,3 +14,28 @@
 # - to_a
 # - values_at
 # - ==, eql?
+
+class Factory
+  def self.new(*arguments, &block)
+    const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if arguments.first.is_a? String
+    create_class(*arguments, &block)
+  end
+
+  def self.create_class(*arguments, &block)
+    Class.new do
+      attr_accessor(*arguments)
+      class_eval(&block) if block_given?
+
+      define_method :initialize do |*parameters|
+        raise ArgumentError, "Wrong arguments quantity!" if arguments.size != parameters.size
+
+        arguments.zip(parameters).each { |inst_var, value| instance_variable_set("@#{inst_var}", value) }
+      end
+    end
+
+  end
+end
+
+# Customer = Factory.new(:name)
+# a = Customer.new('andrei')
+# puts a.name
