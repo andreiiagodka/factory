@@ -72,6 +72,10 @@ class Factory
         to_h.keys
       end
 
+      define_method :values_at do |*selectors|
+        selectors.map { |selector| values[selector] }
+      end
+
       define_method :select do |&action|
         to_a.select(&action)
       end
@@ -101,7 +105,7 @@ end
 
 Customer = Factory.new(:name, :age, :gender)
 customer = Customer.new('andrei', 18, 'male')
-puts customer.length
+puts customer.values_at(0, 3, 2)
 # customer.each_pair { |key, value| puts "#{key}->#{value}" }
 # customer = Customer.new(Customer.new({andrei: [18, 'male']}))
 # puts customer.dig(:name, :name, :andrei, 0)
