@@ -16,96 +16,89 @@
 # - ==, eql?
 
 class Factory
-  def self.new(*arguments, &block)
-    const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if arguments.first.is_a? String
-    create_class(*arguments, &block)
-  end
+  class << self
+    def new(*arguments, &block)
+      const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if arguments.first.is_a? String
+      create_class(*arguments, &block)
+    end
 
-  def self.create_class(*arguments, &block)
-    Class.new do
-      attr_accessor(*arguments)
-      class_eval(&block) if block_given?
+    def create_class(*arguments, &block)
+      Class.new do
+        attr_accessor(*arguments)
+        class_eval(&block) if block_given?
 
-      define_method :initialize do |*parameters|
-        raise ArgumentError, "Wrong arguments quantity!" if arguments.size != parameters.size
+        define_method :initialize do |*parameters|
+          raise ArgumentError, "Wrong arguments quantity!" if arguments.size != parameters.size
 
-        arguments.zip(parameters).each { |inst_var, value| instance_variable_set("@#{inst_var}", value) }
-      end
-
-      define_method :== do |instance|
-        self.class == instance.class && self.values == instance.values
-      end
-
-      define_method :[] do |parameter|
-        if (parameter.is_a? String) || (parameter.is_a? Symbol)
-          instance_variable_get("@#{parameter}")
-        elsif parameter.is_a? Integer
-          instance_variable_get(instance_variables[parameter])
+          arguments.zip(parameters).each { |inst_var, value| instance_variable_set("@#{inst_var}", value) }
         end
-      end
 
-      define_method :[]= do |parameter, value|
-        if (parameter.is_a? String) || (parameter.is_a? Symbol)
-          instance_variable_set("@#{parameter}", value)
-        elsif parameter.is_a? Integer
-          instance_variable_set(instance_variables[parameter], value)
+        define_method :== do |instance|
+          self.class == instance.class && self.values == instance.values
         end
-      end
 
-      define_method :dig do |*parameters|
-        to_h.dig(*parameters)
-      end
+        define_method :[] do |parameter|
+          return instance_variable_get("@#{parameter}") if (parameter.is_a? String) || (parameter.is_a? Symbol)
+          return instance_variable_get(instance_variables[parameter]) if parameter.is_a? Integer
+        end
 
-      define_method :each do |&action|
-        to_a.each(&action)
-      end
+        define_method :[]= do |parameter, value|
+          return instance_variable_set("@#{parameter}", value) if (parameter.is_a? String) || (parameter.is_a? Symbol)
+          return instance_variable_set(instance_variables[parameter], value) if parameter.is_a? Integer
+        end
 
-      define_method :each_pair do |&action|
-        to_h.each_pair(&action)
-      end
+        define_method :dig do |*parameters|
+          to_h.dig(*parameters)
+        end
 
-      define_method :length do
-        instance_variables.count
-      end
+        define_method :each do |&action|
+          to_a.each(&action)
+        end
 
-      define_method :members do
-        to_h.keys
-      end
+        define_method :each_pair do |&action|
+          to_h.each_pair(&action)
+        end
 
-      define_method :values_at do |*selectors|
-        selectors.map { |selector| values[selector] }
-      end
+        define_method :length do
+          instance_variables.count
+        end
 
-      define_method :select do |&action|
-        to_a.select(&action)
-      end
+        define_method :members do
+          to_h.keys
+        end
 
-      define_method :values do
-        instance_variables.map { |inst_var| instance_variable_get(inst_var) }
-      end
+        define_method :values_at do |*selectors|
+          selectors.map { |selector| values[selector] }
+        end
 
-      define_method :to_h do
-        Hash[
-          instance_variables.map do |inst_var|
-            key = inst_var.to_s.delete('@').to_sym
-            value = instance_variable_get(inst_var)
-            [key, value]
-          end
-        ]
-      end
+        define_method :select do |&action|
+          to_a.select(&action)
+        end
 
-      define_method :to_a do
-        to_h.values
-      end
+        define_method :values do
+          instance_variables.map { |inst_var| instance_variable_get(inst_var) }
+        end
 
-      alias_method :size, :length
+        define_method :to_h do
+          Hash[
+            instance_variables.map do |inst_var|
+              key = inst_var.to_s.delete('@').to_sym
+              value = instance_variable_get(inst_var)
+              [key, value]
+            end
+          ]
+        end
+
+        define_method :to_a do
+          to_h.values
+        end
+
+        alias_method :size, :length
+        alias_method :eql?, :==
+      end
     end
   end
 end
 
 Customer = Factory.new(:name, :age, :gender)
 customer = Customer.new('andrei', 18, 'male')
-puts customer.values_at(0, 3, 2)
-# customer.each_pair { |key, value| puts "#{key}->#{value}" }
-# customer = Customer.new(Customer.new({andrei: [18, 'male']}))
-# puts customer.dig(:name, :name, :andrei, 0)
