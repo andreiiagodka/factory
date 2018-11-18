@@ -84,13 +84,7 @@ class Factory
         end
 
         define_method :to_h do
-          Hash[
-            instance_variables.map do |inst_var|
-              key = inst_var.to_s.delete('@').to_sym
-              value = instance_variable_get(inst_var)
-              [key, value]
-            end
-          ]
+          Hash[arguments.zip(values)]
         end
 
         define_method :to_a do
@@ -104,6 +98,6 @@ class Factory
   end
 end
 
-Customer = Factory.new(:name)
-f = Customer.new({b: [1, 2, 3]})
-puts f.dig(:name, :b, 0)
+Customer = Factory.new(:name, :age, :gender)
+f = Customer.new('andrei', 18, 'male')
+puts f.to_h
