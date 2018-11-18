@@ -74,12 +74,9 @@ class Factory
           Hash[arguments.zip(values)]
         end
 
-        define_method :to_a do
-          to_h.values
-        end
-
         alias_method :size, :length
         alias_method :eql?, :==
+        alias_method :to_a, :values
       end
     end
   end
