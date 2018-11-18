@@ -48,7 +48,11 @@ class Factory
         end
 
         define_method :dig do |*parameters|
-          to_h.dig(*parameters)
+          digged = to_h
+          loop do
+            digged = digged[parameters.shift]
+            return digged if (digged.nil?) || (parameters.empty?)
+          end
         end
 
         define_method :each do |&action|
@@ -100,5 +104,6 @@ class Factory
   end
 end
 
-Customer = Factory.new(:name, :age, :gender)
-customer = Customer.new('andrei', 18, 'male')
+Customer = Factory.new(:name)
+f = Customer.new({b: [1, 2, 3]})
+puts f.dig(:name, :b, 0)
