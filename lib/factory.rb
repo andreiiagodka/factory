@@ -3,7 +3,11 @@
 class Factory
   class << self
     def new(*arguments, &block)
-      const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if arguments.first.is_a? String
+      first_arg = arguments.first
+      raise ArgumentError, 'Argument is empty!' if first_arg.empty?
+      raise ArgumentError, 'Argument is an existing class!' if first_arg.is_a? Class
+
+      const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if first_arg.is_a? String
       create_class(*arguments, &block)
     end
 
