@@ -4,8 +4,8 @@ class Factory
   class << self
     def new(*arguments, &block)
       first_arg = arguments.first
-      raise ArgumentError, 'Argument is empty!' if first_arg.empty?
-      raise ArgumentError, 'Argument is an existing class!' if first_arg.is_a? Class
+      raise EmptyArgumentError if first_arg.empty?
+      raise ExistingClassError if first_arg.is_a? Class
 
       const_set(arguments.shift.capitalize, create_class(*arguments, &block)) if first_arg.is_a? String
       create_class(*arguments, &block)
@@ -39,10 +39,10 @@ class Factory
         end
 
         define_method :dig do |*parameters|
-          digged = to_h
-          loop do
-            digged = digged[parameters.shift]
-            return digged if digged.nil? || parameters.empty?
+          parameters.reduce(self) do |key, value|
+            return nil if key[value].nil?
+            
+            key[value]
           end
         end
 
